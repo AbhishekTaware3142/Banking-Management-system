@@ -1,0 +1,5 @@
+export { AdminOverviewSection } from '../../views/admin/AdminOverviewView.jsx'
+export { AdminAccountsSection } from '../../views/admin/AdminAccountsView.jsx'
+export { AdminLoansSection } from '../../views/admin/AdminLoansView.jsx'
+export { AdminAuditSection } from '../../views/admin/AuditView.jsx'
+export { AdminEmployeesSection } from '../../views/admin/EmployeesView.jsx'

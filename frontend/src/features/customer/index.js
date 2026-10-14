@@ -1,0 +1,7 @@
+export { OverviewSection } from '../../views/customer/OverviewView.jsx'
+export { AccountsSection } from '../../views/customer/AccountsView.jsx'
+export { TransfersSection } from '../../views/customer/TransfersView.jsx'
+export { ActivitySection } from '../../views/customer/ActivityView.jsx'
+export { TransactionTableView } from '../../components/TransactionTableView.jsx'
+export { LoansSection } from '../../views/customer/LoansView.jsx'
+export { ActionModal } from '../../components/ActionModal.jsx'
