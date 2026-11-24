@@ -1,0 +1,33 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      MONGODB_URI: mongodb://mongo:27017/banking?replicaSet=rs0
+      SERVER_PORT: 8080
+      JWT_SECRET: MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=
+      JWT_COOKIE_SECURE: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify Docker images build
+        run: docker compose build
+
+  deploy:
+    needs: build
+    runs-on: self-hosted
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Pull latest code and update Docker Desktop
+        shell: powershell
+        run: |
+          cd F:\Dev\Banking-Management-system
+          git pull origin main
+          docker compose up -d --build
