@@ -3,32 +3,30 @@
 ```mermaid
 flowchart TD
     Entry[main.jsx<br/>React root + global CSS] --> App[App.jsx]
-    App --> Shell[pages/BankingDashboard.jsx<br/>session, role, view, data and modal state]
+    App --> Routes[routes/AppRoutes.jsx<br/>authenticated role-based routes]
+    Routes --> Shell[pages/BankingDashboard.jsx<br/>shared banking shell and data orchestration]
 
-    Shell --> Auth{Authenticated?}
-    Auth -- No --> Login[features/auth/AuthPage.jsx<br/>login and registration]
+    Routes --> Auth{Authenticated?}
+    Auth -- No --> Login[views/auth/AuthView.jsx<br/>login and registration]
     Login --> AuthAPI[Backend auth endpoints<br/>/api/auth/login, /register, /me]
-    AuthAPI --> Shell
 
-    Auth -- Yes --> Role{Active role and selected view}
-    Role --> Customer[features/customer/index.js]
-    Role --> Admin[features/admin/index.js]
-    Role --> Teller[features/teller/index.js]
+    Shell --> Context[hooks/useBankingDashboard.js<br/>shared route data and actions]
+    Context --> Customer[pages/customer/<br/>route-level customer pages]
+    Context --> Admin[pages/admin/<br/>route-level admin pages]
+    Context --> Teller[pages/teller/<br/>route-level teller pages]
 
-    Customer --> CustomerPages[Customer pages<br/>Overview, Accounts, Transfers,<br/>Activity, Loans]
-    CustomerPages --> CustomerComponents[Customer components<br/>ActionModal, TransactionTableView]
+    Customer --> CustomerViews[views/customer/<br/>reusable screen sections]
+    Admin --> AdminViews[views/admin/<br/>reusable screen sections]
+    Teller --> TellerViews[views/teller/<br/>reusable screen sections]
+    CustomerViews --> SharedComponents[components/<br/>shared interaction components]
+    AdminViews --> SharedComponents
+    TellerViews --> SharedComponents
 
-    Admin --> AdminPages[Admin pages<br/>Overview, Accounts, Loans,<br/>Audit, Employees]
-    Teller --> TellerPages[Teller pages<br/>Desk, Accounts, History, Loans]
-    TellerPages --> TellerComponents[Teller ActionModal]
-
-    Shell --> API[API requests with cookie credentials]
-    API --> BankingAPI[Spring Boot banking API]
-    Shell --> Demo[data/demoData.js<br/>offline/demo fixtures]
-    Shell --> Format[shared/formatters.js<br/>currency and date formatting]
-    CustomerPages --> Format
-    AdminPages --> Format
-    TellerPages --> Format
+    Shell --> Services[services/<br/>API requests with cookie credentials]
+    Services --> BankingAPI[Spring Boot banking API]
+    CustomerViews --> Format[utils/formatters.js<br/>currency and date formatting]
+    AdminViews --> Format
+    TellerViews --> Format
 
     Shell --> Styles[banking.css]
     Login --> AuthStyles[auth.css]
@@ -38,10 +36,11 @@ flowchart TD
 ## Module Responsibilities
 
 - `main.jsx` mounts the React application and global stylesheet.
-- `App.jsx` selects the top-level dashboard page.
-- `pages/BankingDashboard.jsx` owns authentication state, role selection, current view, API orchestration, and modal state.
-- `features/auth/` contains the sign-in and registration page.
-- `features/customer/`, `features/admin/`, and `features/teller/` contain role-specific pages, reusable components, and barrel exports.
-- `data/demoData.js` supplies demo fixtures; `shared/formatters.js` centralizes currency and date formatters.
+- `App.jsx` delegates to the route tree.
+- `routes/AppRoutes.jsx` declares role-specific routes; `routes/RoleRoute.jsx` restricts each route group to its intended role.
+- `pages/BankingDashboard.jsx` owns the shared banking shell, cross-page data orchestration, and modal state.
+- `hooks/useBankingDashboard.js` exposes shared data and actions through React Router outlet context.
+- `pages/customer/`, `pages/admin/`, and `pages/teller/` contain one route-level page per banking workflow. These pages compose reusable sections from `views/`.
+- `controllers/` owns workflow behavior; `services/` owns backend communication; `utils/formatters.js` centralizes presentation formatting.
 
-Navigation is currently controlled by the dashboard's `view` state; page selections do not change the browser URL.
+Page navigation is URL-based under `/app/customer/*`, `/app/admin/*`, and `/app/teller/*`, so browser history, refreshes, and deep links preserve the active screen.

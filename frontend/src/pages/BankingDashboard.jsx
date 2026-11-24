@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   ArrowLeftRight,
   Briefcase,
@@ -20,14 +21,13 @@ import {
   WalletCards,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext.jsx'
-import { OverviewSection, AccountsSection, TransfersSection, ActivitySection, LoansSection, ActionModal } from '../features/customer/index.js'
+import { ActionModal } from '../features/customer/index.js'
 import { money } from '../utils/formatters.js'
 import { accountService } from '../services/accountService.js'
 import { adminService } from '../services/adminService.js'
 import { transactionService } from '../services/transactionService.js'
 import { loanService } from '../services/loanService.js'
-import { AdminOverviewSection, AdminAccountsSection, AdminLoansSection, AdminAuditSection, AdminEmployeesSection } from '../features/admin/index.js'
-import { TellerDeskSection, TellerAccountsSection, TellerHistorySection, TellerActionModal, TellerLoansSection } from '../features/teller/index.js'
+import { TellerActionModal } from '../features/teller/index.js'
 import '../styles/banking.css'
 
 // ── Controllers ──────────────────────────────────────────────────────────────
@@ -72,6 +72,45 @@ const ADMIN_NAV = [
   { id: 'overview',         label: 'Customer View',           icon: WalletCards },
 ]
 
+const VIEW_PATHS = {
+  overview: { CUSTOMER: 'customer/overview', ADMIN: 'admin/customer' },
+  accounts: 'customer/accounts',
+  transfers: 'customer/transfers',
+  activity: 'customer/activity',
+  loans: { CUSTOMER: 'customer/loans', ADMIN: 'admin/loans' },
+  'admin-overview': 'admin/overview',
+  'admin-accounts': 'admin/accounts',
+  'admin-loans': 'admin/loans',
+  'admin-audit': 'admin/audit',
+  'admin-employees': 'admin/employees',
+  'teller-desk': 'teller/desk',
+  'teller-accounts': 'teller/accounts',
+  'teller-loans': 'teller/loans',
+  'teller-history': 'teller/history',
+}
+
+function getViewFromPath(pathname) {
+  const route = pathname.replace(/^\/app\/?/, '')
+  const routeViews = {
+    'customer/overview': 'overview',
+    'admin/customer': 'overview',
+    'customer/accounts': 'accounts',
+    'customer/transfers': 'transfers',
+    'customer/activity': 'activity',
+    'customer/loans': 'loans',
+    'admin/overview': 'admin-overview',
+    'admin/accounts': 'admin-accounts',
+    'admin/loans': 'admin-loans',
+    'admin/audit': 'admin-audit',
+    'admin/employees': 'admin-employees',
+    'teller/desk': 'teller-desk',
+    'teller/accounts': 'teller-accounts',
+    'teller/loans': 'teller-loans',
+    'teller/history': 'teller-history',
+  }
+  return routeViews[route] || 'overview'
+}
+
 function errorMessage(error) {
   return error.message.toLowerCase().includes('fetch')
     ? 'Banking API is currently offline. Check the backend host and server status.'
@@ -81,13 +120,14 @@ function errorMessage(error) {
 // ── Component ────────────────────────────────────────────────────────────────
 export default function BankingDashboard() {
   const { user: authUser, logout: logoutSession } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
 
   // ── Shared state ────────────────────────────────────────────────────────
   const [accounts, setAccounts]         = useState([])
   const [accountId, setAccountId]       = useState('')
   const [transactions, setTransactions] = useState([])
   const [loans, setLoans]               = useState([])
-  const [view, setView]                 = useState('overview')
   const [modal, setModal]               = useState(null)
   const [receiptTx, setReceiptTx]       = useState(null)
   const [loading, setLoading]           = useState(true)
@@ -96,6 +136,14 @@ export default function BankingDashboard() {
   const [toast, setToast]               = useState(null)
   const [privacyMode, setPrivacyMode]   = useState(false)
   const activeRole = authUser?.role?.toUpperCase() || 'CUSTOMER'
+  const view = getViewFromPath(location.pathname)
+
+  function setView(nextView) {
+    const destination = VIEW_PATHS[nextView]
+    if (!destination) return
+    const rolePath = typeof destination === 'string' ? destination : destination[activeRole]
+    if (rolePath) navigate(`/app/${rolePath}`)
+  }
 
   // Staff-wide data
   const [allAccounts, setAllAccounts]         = useState([])
@@ -260,16 +308,6 @@ export default function BankingDashboard() {
   }
 
   // ── Effects ──────────────────────────────────────────────────────────────
-
-  // Sync role when authUser changes
-  useEffect(() => {
-    if (authUser?.role) {
-      const role = authUser.role.toUpperCase()
-      if (role === 'ADMIN')          setView('admin-overview')
-      else if (role === 'EMPLOYEE')  setView('teller-desk')
-      else                           setView('overview')
-    }
-  }, [authUser])
 
   // Fetch staff-wide data for ADMIN / EMPLOYEE
   useEffect(() => {
@@ -696,174 +734,43 @@ export default function BankingDashboard() {
             </div>
           </div>
 
-          {/* ── View Routing ─────────────────────────────────────────────── */}
           {loading ? (
             <div style={{ textAlign: 'center', padding: '60px 0', color: '#64748b' }}>
               <div className="loader" style={{ margin: '0 auto 14px' }} />
               <p>Synchronizing real-time banking ledger…</p>
             </div>
-
-          ) : view === 'admin-overview' ? (
-            <AdminOverviewSection
-              bankStats={bankStats}
-              allAccounts={allAccounts}
-              allTransactions={allTransactions}
-              formatMoney={formatMoney}
-              onNavigate={adminOverviewCtrl.navigateTo}
-            />
-
-          ) : view === 'admin-accounts' ? (
-            <AdminAccountsSection
-              allAccounts={allAccounts}
-              formatMoney={formatMoney}
-              onSelectAccount={(acc) => {
-                openAdminCustomerView(acc.id)
-                showToast(`Viewing account ${acc.accountNumber} in Customer view.`)
+          ) : (
+            <Outlet
+              context={{
+                activeRole,
+                account,
+                accountId,
+                accounts,
+                allAccounts,
+                allLoans,
+                allTransactions,
+                bankStats,
+                displayedLoans,
+                displayedTransactions,
+                overviewCtrl,
+                activityCtrl,
+                loansCtrl,
+                adminOverviewCtrl,
+                auditCtrl,
+                employeesCtrl,
+                deskCtrl,
+                historyCtrl,
+                formatMoney,
+                setAccountId,
+                setModal,
+                setReceiptTx,
+                setView,
+                isAdminCustomerView,
+                openAdminCustomerView,
+                showToast,
               }}
             />
-
-          ) : view === 'admin-loans' ? (
-            <AdminLoansSection allLoans={allLoans} formatMoney={formatMoney} />
-
-          ) : view === 'admin-audit' ? (
-            <AdminAuditSection
-              allTransactions={allTransactions}
-              formatMoney={formatMoney}
-              onViewReceipt={auditCtrl.viewReceipt}
-            />
-
-          ) : view === 'admin-employees' ? (
-            <AdminEmployeesSection
-              employees={employeesCtrl.employees}
-              loading={employeesCtrl.loading}
-              onSubmit={employeesCtrl.createEmployee}
-            />
-
-          ) : view === 'teller-desk' ? (
-            <TellerDeskSection
-              allAccounts={allAccounts}
-              allTransactions={allTransactions}
-              tellerGraphData={deskCtrl.tellerGraphData}
-              shiftStats={deskCtrl.tellerShiftStats}
-              formatMoney={formatMoney}
-              onTellerAction={deskCtrl.openTellerModal}
-              onViewReceipt={historyCtrl.viewReceipt}
-              onNavigate={setView}
-            />
-
-          ) : view === 'teller-accounts' ? (
-            <TellerAccountsSection
-              allAccounts={allAccounts}
-              formatMoney={formatMoney}
-              onTellerAction={deskCtrl.openTellerModal}
-            />
-
-          ) : view === 'teller-loans' ? (
-            <TellerLoansSection allLoans={allLoans} formatMoney={formatMoney} />
-
-          ) : view === 'teller-history' ? (
-            <TellerHistorySection
-              allTransactions={allTransactions}
-              formatMoney={formatMoney}
-              onViewReceipt={historyCtrl.viewReceipt}
-            />
-
-          ) : !account && activeRole === 'CUSTOMER' ? (
-            <div
-              style={{
-                background: '#ffffff',
-                border: '1px dashed #cbd5e1',
-                borderRadius: '16px',
-                padding: '48px 24px',
-                textAlign: 'center',
-                maxWidth: '480px',
-                margin: '40px auto',
-              }}
-            >
-              <div
-                style={{
-                  width: '54px',
-                  height: '54px',
-                  borderRadius: '50%',
-                  background: '#eff6ff',
-                  color: '#2563eb',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  margin: '0 auto 16px',
-                }}
-              >
-                <Landmark size={26} />
-              </div>
-              <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#0f172a', marginBottom: '8px' }}>
-                Open Your First Banking Account
-              </h3>
-              <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '24px' }}>
-                Start managing balances, making instant wire transfers, and tracking credit facilities.
-              </p>
-              <button type="button" className="btn-primary" onClick={() => setModal('account')}>
-                <Plus size={16} />
-                <span>Open Savings / Current Account</span>
-              </button>
-            </div>
-
-          ) : view === 'overview' ? (
-            <OverviewSection
-              account={account}
-              transactions={displayedTransactions}
-              activeLoans={overviewCtrl.activeLoans}
-              formatMoney={formatMoney}
-              totalInflows={overviewCtrl.totalInflows}
-              totalOutflows={overviewCtrl.totalOutflows}
-              onAction={setModal}
-              onNavigate={setView}
-              onViewReceipt={(tx) => { setReceiptTx(tx); setModal('receipt') }}
-              readOnly={isAdminCustomerView}
-            />
-
-          ) : view === 'accounts' ? (
-            <AccountsSection
-              accounts={accounts}
-              activeId={accountId}
-              onSelect={setAccountId}
-              onCreate={() => setModal('account')}
-              formatMoney={formatMoney}
-            />
-
-          ) : view === 'transfers' ? (
-            <TransfersSection
-              account={account}
-              formatMoney={formatMoney}
-            />
-
-          ) : view === 'activity' ? (
-            <ActivitySection
-              transactions={activityCtrl.filteredTransactions}
-              allTransactionsCount={displayedTransactions.length}
-              activityFilter={activityCtrl.activityFilter}
-              setActivityFilter={activityCtrl.setActivityFilter}
-              searchQuery={activityCtrl.searchQuery}
-              setSearchQuery={activityCtrl.setSearchQuery}
-              onExport={activityCtrl.exportStatement}
-              formatMoney={formatMoney}
-              onViewReceipt={(tx) => { setReceiptTx(tx); setModal('receipt') }}
-            />
-
-          ) : view === 'loans' ? (
-            <LoansSection
-              loans={displayedLoans}
-              formatMoney={formatMoney}
-              onApply={() => setModal('loan')}
-              onPay={loansCtrl.payEmi}
-              calcPrincipal={loansCtrl.calcPrincipal}
-              setCalcPrincipal={loansCtrl.setCalcPrincipal}
-              calcRate={loansCtrl.calcRate}
-              setCalcRate={loansCtrl.setCalcRate}
-              calcMonths={loansCtrl.calcMonths}
-              setCalcMonths={loansCtrl.setCalcMonths}
-            />
-
-          ) : null}
+          )}
         </main>
       </div>
 

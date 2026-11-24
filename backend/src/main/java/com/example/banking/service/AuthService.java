@@ -56,7 +56,7 @@ public class AuthService {
     @Transactional
     public Session register(BankingRequests.Register request) {
         String username = normalize(request.getUsername());
-        if (userRepository.existsByUsername(username)) {
+        if (userRepository.existsByUsernameIgnoreCase(username)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "That username is already registered.");
         }
 
@@ -73,7 +73,7 @@ public class AuthService {
     @Transactional
     public AuthUser createEmployee(BankingRequests.Register request) {
         String username = normalize(request.getUsername());
-        if (userRepository.existsByUsername(username)) {
+        if (userRepository.existsByUsernameIgnoreCase(username)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "An employee with that username already exists.");
         }
 
@@ -96,7 +96,7 @@ public class AuthService {
 
     public Session login(BankingRequests.Login request) {
         String username = normalize(request.getUsername());
-        UserDocument user = userRepository.findByUsername(username)
+        UserDocument user = userRepository.findByUsernameIgnoreCase(username)
             .filter(candidate -> {
                 if (candidate.getPasswordHash() != null) {
                 return passwordEncoder.matches(request.getPassword(), candidate.getPasswordHash());
