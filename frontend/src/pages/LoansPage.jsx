@@ -1,5 +1,5 @@
-import { useBankingDashboard } from '../../hooks/useBankingDashboard.js'
-import { LoansSection } from '../../views/customer/LoansView.jsx'
+import { useBankingDashboard } from '../hooks/useBankingDashboard.js'
+import { LoansSection } from '../views/customer/LoansView.jsx'
 
 export default function LoansPage() {
   const { displayedLoans, formatMoney, setModal, loansCtrl } = useBankingDashboard()

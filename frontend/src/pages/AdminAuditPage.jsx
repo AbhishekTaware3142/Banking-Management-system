@@ -1,5 +1,5 @@
-import { useBankingDashboard } from '../../hooks/useBankingDashboard.js'
-import { AdminAuditSection } from '../../views/admin/AuditView.jsx'
+import { useBankingDashboard } from '../hooks/useBankingDashboard.js'
+import { AdminAuditSection } from '../views/admin/AuditView.jsx'
 
 export default function AdminAuditPage() {
   const { allTransactions, formatMoney, auditCtrl } = useBankingDashboard()

@@ -1,5 +1,5 @@
-import { useBankingDashboard } from '../../hooks/useBankingDashboard.js'
-import { TellerHistorySection } from '../../views/teller/HistoryView.jsx'
+import { useBankingDashboard } from '../hooks/useBankingDashboard.js'
+import { TellerHistorySection } from '../views/teller/HistoryView.jsx'
 
 export default function TellerHistoryPage() {
   const { allTransactions, formatMoney, historyCtrl } = useBankingDashboard()

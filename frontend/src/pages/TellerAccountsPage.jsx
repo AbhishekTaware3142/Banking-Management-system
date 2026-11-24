@@ -1,5 +1,5 @@
-import { useBankingDashboard } from '../../hooks/useBankingDashboard.js'
-import { TellerAccountsSection } from '../../views/teller/AccountsView.jsx'
+import { useBankingDashboard } from '../hooks/useBankingDashboard.js'
+import { TellerAccountsSection } from '../views/teller/AccountsView.jsx'
 
 export default function TellerAccountsPage() {
   const { allAccounts, formatMoney, deskCtrl } = useBankingDashboard()

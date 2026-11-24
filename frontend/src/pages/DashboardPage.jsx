@@ -1,6 +1,6 @@
 import { Landmark, Plus } from 'lucide-react'
-import { useBankingDashboard } from '../../hooks/useBankingDashboard.js'
-import { OverviewSection } from '../../views/customer/OverviewView.jsx'
+import { useBankingDashboard } from '../hooks/useBankingDashboard.js'
+import { OverviewSection } from '../views/customer/OverviewView.jsx'
 
 export default function OverviewPage() {
   const {

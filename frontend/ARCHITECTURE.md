@@ -11,13 +11,11 @@ flowchart TD
     Login --> AuthAPI[Backend auth endpoints<br/>/api/auth/login, /register, /me]
 
     Shell --> Context[hooks/useBankingDashboard.js<br/>shared route data and actions]
-    Context --> Customer[pages/customer/<br/>route-level customer pages]
-    Context --> Admin[pages/admin/<br/>route-level admin pages]
-    Context --> Teller[pages/teller/<br/>route-level teller pages]
+    Context --> Pages[pages/<br/>one route-level component per page]
 
-    Customer --> CustomerViews[views/customer/<br/>reusable screen sections]
-    Admin --> AdminViews[views/admin/<br/>reusable screen sections]
-    Teller --> TellerViews[views/teller/<br/>reusable screen sections]
+    Pages --> CustomerViews[views/customer/<br/>reusable customer screen sections]
+    Pages --> AdminViews[views/admin/<br/>reusable admin screen sections]
+    Pages --> TellerViews[views/teller/<br/>reusable teller screen sections]
     CustomerViews --> SharedComponents[components/<br/>shared interaction components]
     AdminViews --> SharedComponents
     TellerViews --> SharedComponents
@@ -40,7 +38,7 @@ flowchart TD
 - `routes/AppRoutes.jsx` declares role-specific routes; `routes/RoleRoute.jsx` restricts each route group to its intended role.
 - `pages/BankingDashboard.jsx` owns the shared banking shell, cross-page data orchestration, and modal state.
 - `hooks/useBankingDashboard.js` exposes shared data and actions through React Router outlet context.
-- `pages/customer/`, `pages/admin/`, and `pages/teller/` contain one route-level page per banking workflow. These pages compose reusable sections from `views/`.
+- `pages/` contains one top-level page file per workflow (for example `DashboardPage.jsx`, `AccountsPage.jsx`, `AdminAccountsPage.jsx`, and `TellerDeskPage.jsx`). Each page composes reusable sections from `views/`.
 - `controllers/` owns workflow behavior; `services/` owns backend communication; `utils/formatters.js` centralizes presentation formatting.
 
 Page navigation is URL-based under `/app/customer/*`, `/app/admin/*`, and `/app/teller/*`, so browser history, refreshes, and deep links preserve the active screen.

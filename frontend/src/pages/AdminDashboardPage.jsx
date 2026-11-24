@@ -1,5 +1,5 @@
-import { useBankingDashboard } from '../../hooks/useBankingDashboard.js'
-import { AdminOverviewSection } from '../../views/admin/AdminOverviewView.jsx'
+import { useBankingDashboard } from '../hooks/useBankingDashboard.js'
+import { AdminOverviewSection } from '../views/admin/AdminOverviewView.jsx'
 
 export default function AdminOverviewPage() {
   const { bankStats, allAccounts, allTransactions, formatMoney, adminOverviewCtrl } =

@@ -1,5 +1,5 @@
-import { useBankingDashboard } from '../../hooks/useBankingDashboard.js'
-import { AdminEmployeesSection } from '../../views/admin/EmployeesView.jsx'
+import { useBankingDashboard } from '../hooks/useBankingDashboard.js'
+import { AdminEmployeesSection } from '../views/admin/EmployeesView.jsx'
 
 export default function AdminEmployeesPage() {
   const { employeesCtrl } = useBankingDashboard()

@@ -1,5 +1,5 @@
-import { useBankingDashboard } from '../../hooks/useBankingDashboard.js'
-import { AdminAccountsSection } from '../../views/admin/AdminAccountsView.jsx'
+import { useBankingDashboard } from '../hooks/useBankingDashboard.js'
+import { AdminAccountsSection } from '../views/admin/AdminAccountsView.jsx'
 
 export default function AdminAccountsPage() {
   const { allAccounts, formatMoney, openAdminCustomerView, showToast } = useBankingDashboard()

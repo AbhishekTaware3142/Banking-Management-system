@@ -1,5 +1,5 @@
-import { useBankingDashboard } from '../../hooks/useBankingDashboard.js'
-import { ActivitySection } from '../../views/customer/ActivityView.jsx'
+import { useBankingDashboard } from '../hooks/useBankingDashboard.js'
+import { ActivitySection } from '../views/customer/ActivityView.jsx'
 
 export default function ActivityPage() {
   const {
